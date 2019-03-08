@@ -22,8 +22,8 @@ namespace CohesionBoids
         SpriteBatch spriteBatch;
 
         private List<Entity> entityList;
-        private const float EntitySpeed = 100;
-        private const float MaxEntitySpeed = 120;
+        private const float EntitySpeed = 150;
+        private const float MaxEntitySpeed = 200;
         private const float EntityScale = 0.25f;
         private const float EntityDetectionDistance = 150;
         private const float EntitySeparationDistance = 50;
@@ -56,11 +56,13 @@ namespace CohesionBoids
             Entity e46 = new Entity(rectangle, new Vector2(80, 120), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
             Entity e37 = new Entity(rectangle, new Vector2(60, 140), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
             Entity e49 = new Entity(rectangle, new Vector2(80, 180), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
+            Entity e22 = new Entity(rectangle, new Vector2(100, 500), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
+            Entity e23 = new Entity(rectangle, new Vector2(500, 500), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
+            Entity e24 = new Entity(rectangle, new Vector2(200, 200), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
 
             //Avoid finding new neighbors at runtime, so we are generating the flock ahead of time
             Flock f = new Flock(e13, null);
             e13.Flock = f;
-            e13.IsFlockLeader = true;
             e13.InFlock = true;
 
             f.AddMember(e46);
@@ -75,10 +77,27 @@ namespace CohesionBoids
             e49.Flock = f;
             e49.InFlock = true;
 
+            f.AddMember(e22);
+            e22.Flock = f;
+            e22.IsFlockLeader = true;
+            e22.InFlock = true;
+
+            f.AddMember(e23);
+            e23.Flock = f;
+            e23.InFlock = true;
+
+            f.AddMember(e24);
+            e24.Flock = f;
+            e24.InFlock = true;
+
+
             entityList.Add(e13);
             entityList.Add(e46);
             entityList.Add(e37);
             entityList.Add(e49);
+            entityList.Add(e22);
+            entityList.Add(e23);
+            entityList.Add(e24);
 
             base.Initialize();
         }
@@ -122,7 +141,7 @@ namespace CohesionBoids
             // TODO: Add your update logic here
             foreach (Entity e in entityList)
             {
-                if (gameTime.TotalGameTime.TotalSeconds > 5)
+                if (gameTime.TotalGameTime.TotalSeconds > 1)
                     e.Velocity += Cohesion(e);
                 e.Update(gameTime);
             }
