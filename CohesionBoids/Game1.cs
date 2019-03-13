@@ -50,35 +50,30 @@ namespace CohesionBoids
             entityList = new List<Entity>();
 
             Rectangle rectangle = new Rectangle(-BoundingBoxExpansion, -BoundingBoxExpansion, GraphicsDevice.Viewport.Width + BoundingBoxExpansion, GraphicsDevice.Viewport.Height + BoundingBoxExpansion);
-            float rotation = MathHelper.ToRadians(-10);
 
-            Entity e13 = new Entity(rectangle, new Vector2(60, 80), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
-            Entity e46 = new Entity(rectangle, new Vector2(70, 90), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
-            Entity e37 = new Entity(rectangle, new Vector2(60, 140), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
-            Entity e49 = new Entity(rectangle, new Vector2(80, 180), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
+            Random r = new Random();
+
+            Entity e1 = new Entity(rectangle, new Vector2(20, 60), EntitySpeed, MaxEntitySpeed, (float)(r.NextDouble() * MathHelper.TwoPi), EntityScale, EntityDetectionDistance, EntitySeparationDistance);
+            Entity e2 = new Entity(rectangle, new Vector2(80, 120), EntitySpeed, MaxEntitySpeed, (float)(r.NextDouble() * MathHelper.TwoPi), EntityScale, EntityDetectionDistance, EntitySeparationDistance);
+            Entity e3 = new Entity(rectangle, new Vector2(60, 140), EntitySpeed, MaxEntitySpeed, (float)(r.NextDouble() * MathHelper.TwoPi), EntityScale, EntityDetectionDistance, EntitySeparationDistance);
 
             //Avoid finding new neighbors at runtime, so we are generating the flock ahead of time
-            Flock f = new Flock(e13, null);
-            e13.Flock = f;
-            e13.IsFlockLeader = true;
-            e13.InFlock = true;
+            Flock f = new Flock(e1, null);
+            e1.Flock = f;
+            e1.IsFlockLeader = true;
+            e1.InFlock = true;
 
-            f.AddMember(e46);
-            e46.Flock = f;
-            e46.InFlock = true;
+            f.AddMember(e2);
+            e2.Flock = f;
+            e2.InFlock = true;
 
-            f.AddMember(e37);
-            e37.Flock = f;
-            e37.InFlock = true;
+            f.AddMember(e3);
+            e3.Flock = f;
+            e3.InFlock = true;
 
-            f.AddMember(e49);
-            e49.Flock = f;
-            e49.InFlock = true;
-
-            entityList.Add(e13);
-            entityList.Add(e46);
-            entityList.Add(e37);
-            entityList.Add(e49);
+            entityList.Add(e1);
+            entityList.Add(e2);
+            entityList.Add(e3);
 
             base.Initialize();
         }
@@ -116,18 +111,48 @@ namespace CohesionBoids
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+            // Allows the game to exit
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+                this.Exit();
 
             // TODO: Add your update logic here
             foreach (Entity e in entityList)
             {
                 if (gameTime.TotalGameTime.TotalSeconds > 5)
+                {
+                    e.Velocity += Alignment(e);
+                    e.Velocity += Cohesion(e);
                     e.Velocity += Separation(e);
+                }
                 e.Update(gameTime);
             }
 
             base.Update(gameTime);
+        }
+
+        public Vector2 Alignment(Entity Entity)
+        {
+            Vector2 forceVector = Vector2.Zero;
+            int neighbors = 0;
+
+            foreach (Entity e in Entity.Flock.Entities)
+            {
+                //Check to make sure the entity we are investigating is not ourself
+                if (e != Entity)
+                {
+                    forceVector += e.Velocity;
+                    neighbors++;
+                }
+            }
+
+            if (neighbors > 0)
+            {
+                forceVector.Average((float)neighbors);
+                forceVector.Normalize();
+            }
+            Console.WriteLine("Alignment: ");
+            Console.WriteLine(forceVector);
+            return Vector2.Zero; // Weird behaviour here in adding forcevector even though the force vector seems fine, so ZERO'd
         }
 
         public Vector2 Separation(Entity Entity)
@@ -181,7 +206,8 @@ namespace CohesionBoids
 
                 forceVector = Vector2.Normalize(forceVector);
             }
-
+            Console.WriteLine("Cohesion: ");
+            Console.WriteLine(forceVector);
             return forceVector;
         }
 
