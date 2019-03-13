@@ -52,8 +52,8 @@ namespace CohesionBoids
             Rectangle rectangle = new Rectangle(-BoundingBoxExpansion, -BoundingBoxExpansion, GraphicsDevice.Viewport.Width + BoundingBoxExpansion, GraphicsDevice.Viewport.Height + BoundingBoxExpansion);
             float rotation = MathHelper.ToRadians(-10);
 
-            Entity e13 = new Entity(rectangle, new Vector2(20, 60), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
-            Entity e46 = new Entity(rectangle, new Vector2(80, 120), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
+            Entity e13 = new Entity(rectangle, new Vector2(60, 80), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
+            Entity e46 = new Entity(rectangle, new Vector2(70, 90), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
             Entity e37 = new Entity(rectangle, new Vector2(60, 140), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
             Entity e49 = new Entity(rectangle, new Vector2(80, 180), EntitySpeed, MaxEntitySpeed, rotation, EntityScale, EntityDetectionDistance, EntitySeparationDistance);
 
@@ -123,11 +123,38 @@ namespace CohesionBoids
             foreach (Entity e in entityList)
             {
                 if (gameTime.TotalGameTime.TotalSeconds > 5)
-                    e.Velocity += Cohesion(e);
+                    e.Velocity += Separation(e);
                 e.Update(gameTime);
             }
 
             base.Update(gameTime);
+        }
+
+        public Vector2 Separation(Entity Entity)
+        {
+            Vector2 forceVector = Vector2.Zero;
+
+            foreach (Entity e in Entity.Flock.Entities)
+            {
+                //Check to make sure the entity we are investigating is not ourself
+                if (e != Entity)
+                {
+                    if (Vector2.DistanceSquared(e.Position, Entity.Position) < Entity.SeparationDistance)
+                    {
+                        //Calculate the heading vector between the source entity and its neighbor
+                        Vector2 headingVector = Entity.Position - e.Position;
+
+                        //Calculate the scale value
+                        //headingVector.length() will give us the distance between the entities
+                        float scale = headingVector.Length() / (float)Math.Sqrt(Entity.SeparationDistance);
+
+                        //The closer we are, the more intense the force vector will be (scaled)
+                        forceVector = Vector2.Normalize(headingVector) / scale;
+                    }
+                }
+            }
+
+            return forceVector;
         }
 
         public Vector2 Cohesion(Entity Entity)
